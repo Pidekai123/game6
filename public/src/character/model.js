@@ -61,9 +61,39 @@ export function createCharacter(scene) {
         });
       });
 
-      // Wait for all animations to load
+      // Wait for all animations to load, then process them
       Promise.all(animPromises).then(() => {
         console.log(`Loaded ${character.animations.length} animations`);
+
+        // Find the root bone
+        let rootBone;
+        character.traverse(child => {
+          if (child.isSkinnedMesh && child.skeleton) {
+            rootBone = child.skeleton.bones[0]; // Typically the root bone is the first in the skeleton
+          }
+        });
+
+        if (rootBone) {
+          console.log(`Root bone found: ${rootBone.name}`);
+
+          // Process each animation clip to remove position tracks for the root bone
+          character.animations = character.animations.map(clip => {
+            const newTracks = clip.tracks.filter(track => {
+              const [targetName, property] = track.name.split('.');
+              // Exclude position tracks for the root bone
+              if (targetName === rootBone.name && property === 'position') {
+                return false;
+              }
+              return true;
+            });
+            // Create a new animation clip with the filtered tracks
+            return new THREE.AnimationClip(clip.name, clip.duration, newTracks);
+          });
+          console.log("Processed animations to remove root motion");
+        } else {
+          console.warn("No root bone found, cannot remove root motion");
+        }
+
         resolve(character);
       });
 
