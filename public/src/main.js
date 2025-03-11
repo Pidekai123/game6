@@ -32,11 +32,22 @@ let mixer, actions = {};
 
 // Camera settings
 const cameraSettings = {
-  height: 1,
-  distance: 2,
-  smoothing: 0.1,
-  lookAtHeight: 0.5
+  distance: 5,
+  lookAtHeight: 0.5,
+  horizontalRotation: 0,
+  verticalRotation: Math.asin(0.25) // Approx. 14.5 degrees
 };
+
+// Initialize mouse control object
+const mouseControl = {
+  isRightClicking: false,
+  previousX: 0,
+  previousY: 0,
+  rotationSensitivity: 0.009
+};
+
+// Set up mouse controls immediately
+setupMouseControls(mouseControl);
 
 createCharacter(scene).then((character) => {
   // Make character smaller
@@ -97,7 +108,7 @@ createCharacter(scene).then((character) => {
 
     // Update camera
     cameraTarget.position.lerp(character.position, 0.1);
-    updateCamera(character, cameraTarget, delta);
+    updateCamera(character, delta);
 
     // Update lighting
     if (lights.animate) lights.animate(clock.elapsedTime);
@@ -111,18 +122,70 @@ createCharacter(scene).then((character) => {
   console.error("Failed to load character:", error);
 });
 
-function updateCamera(character, target, delta) {
-  const characterDirection = new THREE.Vector3(0, 0, 1);
-  characterDirection.applyQuaternion(character.quaternion);
+// Mouse controls setup
+function setupMouseControls(mouseControl) {
+  // Add event listeners directly to document
+  window.addEventListener('mousedown', (event) => {
+    if (event.button === 2) { // Right mouse button
+      event.preventDefault();
+      mouseControl.isRightClicking = true;
+      mouseControl.previousX = event.clientX;
+      mouseControl.previousY = event.clientY;
+      console.log("Right mouse button down", mouseControl);
+    }
+  });
 
-  const targetPosition = target.position.clone();
-  targetPosition.y += cameraSettings.height;
-  targetPosition.sub(characterDirection.multiplyScalar(cameraSettings.distance));
+  window.addEventListener('mousemove', (event) => {
+    if (mouseControl.isRightClicking) {
+      const deltaX = event.clientX - mouseControl.previousX;
+      const deltaY = event.clientY - mouseControl.previousY;
 
-  camera.position.lerp(targetPosition, cameraSettings.smoothing);
+      cameraSettings.horizontalRotation += deltaX * mouseControl.rotationSensitivity;
+      cameraSettings.verticalRotation += deltaY * mouseControl.rotationSensitivity;
 
-  const lookAtPoint = target.position.clone();
+      // Clamp vertical rotation between -60° and 60°
+      const maxVertical = Math.PI / 3;
+      const minVertical = -Math.PI / 3;
+      cameraSettings.verticalRotation = Math.max(minVertical, Math.min(maxVertical, cameraSettings.verticalRotation));
+
+      mouseControl.previousX = event.clientX;
+      mouseControl.previousY = event.clientY;
+    }
+  });
+
+  window.addEventListener('mouseup', (event) => {
+    if (event.button === 2) {
+      mouseControl.isRightClicking = false;
+      console.log("Right mouse button up");
+    }
+  });
+
+  // This is critical - must be on window level
+  window.addEventListener('contextmenu', (event) => {
+    event.preventDefault(); // Prevent context menu from appearing
+    console.log("Context menu prevented");
+    return false;
+  });
+}
+
+// Camera update function
+function updateCamera(character, delta) {
+  const lookAtPoint = character.position.clone();
   lookAtPoint.y += cameraSettings.lookAtHeight;
+
+  const horizontalAngle = cameraSettings.horizontalRotation;
+  const verticalAngle = cameraSettings.verticalRotation;
+  const distance = cameraSettings.distance;
+
+  const sinH = Math.sin(horizontalAngle);
+  const cosH = Math.cos(horizontalAngle);
+  const sinV = Math.sin(verticalAngle);
+  const cosV = Math.cos(verticalAngle);
+
+  camera.position.x = lookAtPoint.x + distance * sinH * cosV;
+  camera.position.y = lookAtPoint.y + distance * sinV;
+  camera.position.z = lookAtPoint.z + distance * cosH * cosV;
+
   camera.lookAt(lookAtPoint);
 }
 
@@ -132,43 +195,3 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
-
-// Add LOD (Level of Detail) system for distant objects
-function setupLOD() {
-  scene.traverse(object => {
-    if (object.isMesh && object !== ground && object.name !== 'character') {
-      // Create simple LOD for scene objects
-      const geometry = object.geometry;
-      const material = object.material;
-
-      const lod = new THREE.LOD();
-
-      // Original high detail
-      lod.addLevel(object, 0);
-
-      // Medium detail
-      const mediumGeo = geometry.clone().toNonIndexed();
-      const mediumMesh = new THREE.Mesh(mediumGeo, material);
-      lod.addLevel(mediumMesh, 50);
-
-      // Low detail
-      const lowGeo = new THREE.BoxGeometry(
-        object.scale.x,
-        object.scale.y,
-        object.scale.z
-      );
-      const lowMesh = new THREE.Mesh(lowGeo, material);
-      lod.addLevel(lowMesh, 100);
-
-      // Replace original object with LOD
-      object.parent.add(lod);
-      lod.position.copy(object.position);
-      lod.rotation.copy(object.rotation);
-      lod.scale.copy(object.scale);
-      object.parent.remove(object);
-    }
-  });
-}
-
-// Call this after loading the scene
-setupLOD();
