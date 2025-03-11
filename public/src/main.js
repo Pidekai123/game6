@@ -32,10 +32,10 @@ let mixer, actions = {};
 
 // Camera settings
 const cameraSettings = {
-  height: 15,
-  distance: 30,
+  height: 1,
+  distance: 2,
   smoothing: 0.1,
-  lookAtHeight: 1.5
+  lookAtHeight: 0.5
 };
 
 createCharacter(scene).then((character) => {
@@ -74,7 +74,7 @@ createCharacter(scene).then((character) => {
   }
 
   // Camera initial position
-  camera.position.set(0, 5, 10);
+  camera.position.set(0, 1, 2);
 
   // Set up keyboard controls
   setupControls();
