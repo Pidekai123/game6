@@ -13,7 +13,7 @@ export function createCharacter(scene) {
 
       // Scale and position the character
       character.scale.setScalar(0.01);
-      character.position.set(0, 2, 0); // Start higher to avoid terrain clipping
+      character.position.set(0, 2, 0);
       character.traverse(child => {
         if (child.isMesh) {
           child.castShadow = true;

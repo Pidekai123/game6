@@ -27,13 +27,25 @@ let initialY = 0;
 let currentAction = null;
 let lastAnimationName = 'idle';
 
-// Debug helper
-function debugRay(start, end, scene, color = 0xff0000) {
-  const material = new THREE.LineBasicMaterial({ color });
-  const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
-  const line = new THREE.Line(geometry, material);
-  scene.add(line);
-  setTimeout(() => scene.remove(line), 100); // Remove after 100ms
+// Improved animation transition
+function playAnimation(actions, name, fadeTime = 0.2) {
+  if (!actions[name]) {
+    console.warn(`Animation "${name}" not found`);
+    return;
+  }
+
+  if (lastAnimationName === name) return;
+
+  const current = actions[lastAnimationName];
+  const next = actions[name];
+
+  if (current) {
+    current.fadeOut(fadeTime);
+  }
+
+  next.reset().fadeIn(fadeTime).play();
+  lastAnimationName = name;
+  console.log(`Playing animation: ${name}`);
 }
 
 // Improved terrain height detection
@@ -41,7 +53,7 @@ function getTerrainHeight(character, scene) {
   const raycaster = new THREE.Raycaster();
   const rayStart = new THREE.Vector3(
     character.position.x,
-    character.position.y + 50, // Start from a reasonable height
+    character.position.y + 5000, // Start from a reasonable height
     character.position.z
   );
   const rayDir = new THREE.Vector3(0, -1, 0);
@@ -87,27 +99,6 @@ export function setupControls() {
       case 'Space': keys.jump = false; break;
     }
   });
-}
-
-// Improved animation transition
-function playAnimation(actions, name, fadeTime = 0.2) {
-  if (!actions[name]) {
-    console.warn(`Animation "${name}" not found`);
-    return;
-  }
-
-  if (lastAnimationName === name) return;
-
-  const current = actions[lastAnimationName];
-  const next = actions[name];
-
-  if (current) {
-    current.fadeOut(fadeTime);
-  }
-
-  next.reset().fadeIn(fadeTime).play();
-  lastAnimationName = name;
-  console.log(`Playing animation: ${name}`);
 }
 
 export function updateMovement(character, actions, delta, camera, scene) {
