@@ -43,7 +43,7 @@ createCharacter(scene).then((character) => {
   character.scale.setScalar(0.005);
 
   // Position character higher to avoid terrain clipping
-  character.position.y = 2;
+  character.position.y = 1;
 
   console.log("Character loaded with animations:", character.animations.length);
 
