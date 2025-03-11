@@ -30,11 +30,11 @@ export function createCharacter(scene) {
       const animationPaths = {
         idle: '../assets/models/idle.fbx',
         walkForward: '../assets/models/walking.fbx',
-        walkBack: '../assets/models/walking.fbx', // Reuse walking.fbx (play in reverse for backward)
+        walkBack: '../assets/models/walking.fbx', // Reuse walking.fbx (play in reverse)
         walkLeft: '../assets/models/left strafe walking.fbx',
         walkRight: '../assets/models/right strafe walking.fbx',
-        runForward: '../assets/models/running.fbx',
-        runBack: '../assets/models/running.fbx', // Reuse running.fbx (play in reverse for backward)
+        runForward: '../assets/models/running.fbx', // Make sure this is a proper running animation
+        runBack: '../assets/models/running.fbx', // Reuse running.fbx (play in reverse)
         runLeft: '../assets/models/left strafe.fbx',
         runRight: '../assets/models/right strafe.fbx',
         jump: '../assets/models/jump.fbx',
