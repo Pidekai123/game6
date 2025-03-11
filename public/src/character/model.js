@@ -1,4 +1,3 @@
-// public/src/character/model.js
 import * as THREE from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
@@ -7,8 +6,8 @@ export function createCharacter(scene) {
     console.log("Loading character model...");
     const loader = new FBXLoader();
 
-    // Load the character model
-    loader.load('../assets/models/character.fbx', (character) => {
+    // Load the new character model
+    loader.load('../assets/models/Y Bot.fbx', (character) => {
       console.log("Character model loaded, processing...");
 
       // Scale and position the character
@@ -27,18 +26,22 @@ export function createCharacter(scene) {
       // Store animations
       character.animations = [];
 
-      // Load animations
+      // Define new animation paths
       const animationPaths = {
-        idle: '../assets/models/standing idle.fbx',
-        walkForward: '../assets/models/Standing Walk Forward.fbx',
-        walkBack: '../assets/models/Standing Walk Back.fbx',
-        walkLeft: '../assets/models/Standing Walk Left.fbx',
-        walkRight: '../assets/models/Standing Walk Right.fbx',
-        runForward: '../assets/models/Standing Run Forward.fbx',
-        runBack: '../assets/models/Standing Run Back.fbx',
-        runLeft: '../assets/models/Standing Run Left.fbx',
-        runRight: '../assets/models/Standing Run Right.fbx',
-        jump: '../assets/models/Standing Jump.fbx'
+        idle: '../assets/models/idle.fbx',
+        walkForward: '../assets/models/walking.fbx',
+        walkBack: '../assets/models/walking.fbx', // Reuse walking.fbx (play in reverse for backward)
+        walkLeft: '../assets/models/left strafe walking.fbx',
+        walkRight: '../assets/models/right strafe walking.fbx',
+        runForward: '../assets/models/running.fbx',
+        runBack: '../assets/models/running.fbx', // Reuse running.fbx (play in reverse for backward)
+        runLeft: '../assets/models/left strafe.fbx',
+        runRight: '../assets/models/right strafe.fbx',
+        jump: '../assets/models/jump.fbx',
+        turnLeft: '../assets/models/left turn.fbx',
+        turnRight: '../assets/models/right turn.fbx',
+        turnLeft90: '../assets/models/left turn 90.fbx',
+        turnRight90: '../assets/models/right turn 90.fbx'
       };
 
       // Load each animation
